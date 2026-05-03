@@ -1,0 +1,64 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isDataOwner() {
+      return isSignedIn() && request.auth.uid == resource.data.userId;
+    }
+
+    function isIncomingOwner() {
+      return isSignedIn() && request.auth.uid == request.resource.data.userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // User profiles
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.keys().hasAll(['name', 'email', 'createdAt']);
+      allow update: if isOwner(userId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name']);
+    }
+
+    // Students
+    match /students/{studentId} {
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isIncomingOwner() && isValidId(studentId);
+      allow update: if isDataOwner() && isIncomingOwner();
+      allow delete: if isDataOwner();
+    }
+
+    // Classes
+    match /classes/{classId} {
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isIncomingOwner() && isValidId(classId);
+      allow update: if isDataOwner() && isIncomingOwner();
+      allow delete: if isDataOwner();
+    }
+
+    // Payments
+    match /payments/{paymentId} {
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isIncomingOwner() && isValidId(paymentId);
+      allow update: if isDataOwner() && isIncomingOwner();
+      allow delete: if isDataOwner();
+    }
+  }
+}

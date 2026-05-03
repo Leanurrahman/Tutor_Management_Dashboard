@@ -1,0 +1,75 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "System user (tutor) profile.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "email", "createdAt"]
+    },
+    "Student": {
+      "title": "Student",
+      "description": "A student managed by the tutor.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "subject": { "type": "string" },
+        "monthlyFee": { "type": "number" },
+        "status": { "type": "string", "enum": ["Active", "Inactive"] },
+        "totalPaid": { "type": "number" },
+        "outstandingDue": { "type": "number" }
+      },
+      "required": ["userId", "name", "subject", "monthlyFee", "status"]
+    },
+    "Class": {
+      "title": "Class",
+      "description": "A tutoring session/class record.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "studentId": { "type": "string" },
+        "topic": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["Attended", "Missed"] }
+      },
+      "required": ["userId", "studentId", "topic", "date", "status"]
+    },
+    "Payment": {
+      "title": "Payment",
+      "description": "A payment record from a student.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "studentId": { "type": "string" },
+        "amount": { "type": "number" },
+        "date": { "type": "string", "format": "date-time" },
+        "note": { "type": "string" }
+      },
+      "required": ["userId", "studentId", "amount", "date"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles."
+    },
+    "/students/{studentId}": {
+      "schema": "Student",
+      "description": "Student records."
+    },
+    "/classes/{classId}": {
+      "schema": "Class",
+      "description": "Class tracking."
+    },
+    "/payments/{paymentId}": {
+      "schema": "Payment",
+      "description": "Payment history."
+    }
+  }
+}
